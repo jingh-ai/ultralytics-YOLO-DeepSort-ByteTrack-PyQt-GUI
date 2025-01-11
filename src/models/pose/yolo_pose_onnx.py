@@ -2,7 +2,7 @@ import numpy as np
 from onnxruntime import InferenceSession
 from src.utils.boxes import multiclass_nms_class_agnostic_keypoints
 from src.models.pose.pose_detector_base import PoseDetectorBase, Model
-from src.models.base.yolov8_base import ModelError
+from src.models.base.yolo_base import ModelError
 
 
 class PoseDetector(PoseDetectorBase):

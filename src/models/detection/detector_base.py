@@ -1,6 +1,6 @@
 import cv2 as cv
 from collections import namedtuple
-from src.models.base.yolov8_base import YoloPredictorBase
+from src.models.base.yolo_base import YoloPredictorBase
 from src.utils.visualize import PALLETE
 import math
 
