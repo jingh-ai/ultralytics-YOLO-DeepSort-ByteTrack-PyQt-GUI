@@ -22,7 +22,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.conf_thr = 0.3
         self.iou_thr = 0.45
         self.frame_interval = 0
-        self.model_name = "yolov8n"
+        self.model_name = "yolo11n"
         self.ai_task = "object_detection"
         self.tracker_name = "deepsort"
         
