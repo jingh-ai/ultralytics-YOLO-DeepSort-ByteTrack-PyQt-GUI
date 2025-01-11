@@ -48,7 +48,7 @@ or with conda:
 conda env create -f environment.yml
 
 # activate the conda environment
-conda activate yolov8_gui
+conda activate yolo_gui
 ```
 
 ## Download weights
