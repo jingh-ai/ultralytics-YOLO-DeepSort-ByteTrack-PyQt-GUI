@@ -155,7 +155,7 @@ dependencies:
       - beautifulsoup4==4.12.2
       - coloredlogs==15.0.1
       - flatbuffers==23.5.26
-      - gdown==4.7.1
+      - gdown==5.2.0
       - humanfriendly==10.0
       - onnxruntime-gpu==1.16.1
       - protobuf==4.24.4
