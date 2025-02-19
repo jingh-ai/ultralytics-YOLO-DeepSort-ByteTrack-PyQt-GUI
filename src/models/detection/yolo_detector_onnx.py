@@ -2,7 +2,7 @@ import numpy as np
 from onnxruntime import InferenceSession
 import cv2 as cv
 from src.models.detection.detector_base import DetectorBase, Model
-from src.models.base.yolov8_base import ModelError
+from src.models.base.yolo_base import ModelError
 from src.utils.boxes import xywh2xyxy, multiclass_nms_class_agnostic
 from src.utils.general import get_classes
 

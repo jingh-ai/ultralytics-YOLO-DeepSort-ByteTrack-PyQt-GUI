@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QThread, pyqtSignal
-from src.models.detection.yolov8_detector_onnx import YoloDetector
-from src.models.pose.yolov8_pose_onnx import PoseDetector
-from src.models.segmentation.yolov8_seg_onnx import YOLOSeg
+from src.models.detection.yolo_detector_onnx import YoloDetector
+from src.models.pose.yolo_pose_onnx import PoseDetector
+from src.models.segmentation.yolo_seg_onnx import YOLOSeg
 from src.models.tracking.deep_sort.deep_sort import DeepSort
 from src.models.tracking.byte_track.byte_tracker import BYTETracker
 from src.utils.general import ROOT, add_image_id

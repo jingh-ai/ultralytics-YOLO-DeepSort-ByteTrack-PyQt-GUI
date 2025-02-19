@@ -3,7 +3,7 @@ import cv2 as cv
 import numpy as np
 from onnxruntime import InferenceSession
 from src.models.segmentation.segmentation_base import SegmentBase, Model
-from src.models.base.yolov8_base import ModelError
+from src.models.base.yolo_base import ModelError
 from src.utils.boxes import xywh2xyxy, nms
 from src.utils.general import get_classes, sigmoid
 

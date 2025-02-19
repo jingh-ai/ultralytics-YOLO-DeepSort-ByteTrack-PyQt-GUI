@@ -1,4 +1,4 @@
-name: yolov8_gui
+name: yolo_gui
 channels:
   - pytorch
   - nvidia
@@ -155,7 +155,6 @@ dependencies:
       - beautifulsoup4==4.12.2
       - coloredlogs==15.0.1
       - flatbuffers==23.5.26
-      - gdown==4.7.1
       - humanfriendly==10.0
       - onnxruntime-gpu==1.16.1
       - protobuf==4.24.4
@@ -163,4 +162,4 @@ dependencies:
       - soupsieve==2.5
       - sympy==1.12
       - tqdm==4.66.1
-prefix: /opt/anaconda3/envs/yolov8_gui
+prefix: /opt/anaconda3/envs/yolo_gui
