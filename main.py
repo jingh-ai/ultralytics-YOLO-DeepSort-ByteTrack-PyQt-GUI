@@ -28,6 +28,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         
         self.init_slots()
         self.buttons_states("waiting_for_setting")
+        self.model_task_mapping()
     
     def init_slots(self):
         self.radioButton_det.toggled.connect(lambda: self.get_ai_task(self.radioButton_det))
@@ -40,6 +41,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.horizontalSlider_interval.valueChanged.connect(lambda x: self.update_parameter(x, 'horizontalSlider_interval'))
         self.horizontalSlider_iou.valueChanged.connect(lambda x: self.update_parameter(x, 'horizontalSlider_iou'))
         self.comboBox_model.currentTextChanged.connect(self.choose_model)
+        self.comboBox_model.currentTextChanged.connect(self.model_task_mapping)
         self.comboBox_tracker.currentTextChanged.connect(self.choose_tracker)
         self.pushButton_cam.clicked.connect(self.process_camera)
         self.pushButton_file.clicked.connect(self.process_file)
@@ -93,6 +95,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if btn.isChecked() == True:
                 self.ai_task = "segmentation"
     
+    def model_task_mapping(self):
+        if "YOLOv13" in self.comboBox_model.currentText():
+            self.radioButton_det.setDisabled(False)
+            self.radioButton_det.setChecked(True)
+            self.radioButton_pose.setDisabled(True)
+            self.radioButton_seg.setDisabled(True)
+        else:
+            self.radioButton_det.setDisabled(False)
+            self.radioButton_pose.setDisabled(False)
+            self.radioButton_seg.setDisabled(False)
+    
     def choose_model(self):
         self.model_name = self.comboBox_model.currentText()
         self.model_name = self.model_name.lower()
@@ -120,6 +133,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.horizontalSlider_iou.setDisabled(False)
             self.doubleSpinBox_interval.setDisabled(False)
             self.horizontalSlider_interval.setDisabled(False)
+            self.model_task_mapping()
         elif work_state == "processing_on_camera":
             self.pushButton_play.click
             self.radioButton_det.setDisabled(True)

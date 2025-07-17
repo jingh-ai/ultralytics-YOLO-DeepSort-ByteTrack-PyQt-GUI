@@ -12,6 +12,11 @@ Supported AI tasks:
 - [ ] OBB
 
 Supported Models:
+- [x] YOLOv13
+   - [x] YOLOv13-n
+   - [x] YOLOv13-s
+   - [x] YOLOv13-l
+   - [x] YOLOv13-x
 - [x] YOLO11
    - [x] YOLO11-n
    - [x] YOLO11-s
