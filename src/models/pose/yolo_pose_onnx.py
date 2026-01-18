@@ -9,14 +9,15 @@ class PoseDetector(PoseDetectorBase):
     def __init__(self):
         self._model = None
     
-    def init(self, model_path, confidence_threshold=0.3, iou_threshold=0.45):
+    def init(self, model_path, confidence_threshold=0.3, iou_threshold=0.45, is_yolo26=False):
         _session = InferenceSession(model_path, providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
         self.input_names,self.output_names, input_size = self.get_onnx_model_details(_session)
         self._model = Model(
             model=_session,
             confidence_threshold=confidence_threshold,
             iou_threshold=iou_threshold,
-            input_size=input_size
+            input_size=input_size,
+            is_yolo26=is_yolo26
         )
 
     def postprocess(self, model_output, scale, iou_thres, confi_thres):
@@ -43,6 +44,32 @@ class PoseDetector(PoseDetectorBase):
                 pose_results.append(pose_dict)
         return pose_results
     
+    def posrprocess_yolo26(self, model_output, scale, confi_thres):
+        preds = np.squeeze(model_output[0])
+        mask = preds[:, 4] > confi_thres
+        preds = preds[mask]
+        if len(preds) == 0:
+            return []
+        
+        boxes = preds[:,:4]
+        boxes *= scale
+        scores = preds[:,4:5]
+        class_ids = preds[:,5:6]
+        kpts = preds[:,6:]
+
+        pose_results = []
+        for i in range(len(class_ids)):
+                kpt = (kpts[i,:].reshape((17,3)))*[scale,scale,1]
+                pose_dict = {
+                    "id":int(i),
+                    "class":"person",
+                    "confidence":float(scores[i]),
+                    "bbox": np.rint(boxes[i]),
+                    "keypoints":np.array(kpt),
+                    "segmentation":np.array([])}
+                pose_results.append(pose_dict)
+        return pose_results
+    
     def inference(self, image, confi_thres=None, iou_thres=None):
         if self._model is None:
             raise ModelError("Model not initialized. Have you called init()?")
@@ -54,5 +81,9 @@ class PoseDetector(PoseDetectorBase):
         scale, meta = self.preprocess(image, self._model.input_size)
         model_input = {self.input_names[0]: meta}
         model_output = self._model.model.run(self.output_names, model_input)[0]
-        pose_results = self.postprocess(model_output, scale, iou_thres, confi_thres)
+        if self._model.is_yolo26:
+            pose_results = self.posrprocess_yolo26(model_output, scale, confi_thres)
+        else:
+            pose_results = self.postprocess(model_output, scale, iou_thres, confi_thres)
         return pose_results
+

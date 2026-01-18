@@ -50,7 +50,8 @@ class AiWorkerThread(QThread):
             self.pose_detector.init(
                 model_path=os.path.join(ROOT, f"weights/pose/{self.model_name}-pose.onnx"),
                 confidence_threshold=self.confi_thr,
-                iou_threshold=self.iou_thr)
+                iou_threshold=self.iou_thr,
+                is_yolo26=("yolo26" in self.model_name.lower()))
         elif self.ai_task == "segmentation":
             self.seg_detector = YOLOSeg()
             self.seg_detector.init(

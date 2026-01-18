@@ -4,7 +4,7 @@ from src.models.base.yolo_base import YoloPredictorBase
 from src.utils.visualize import PALLETE, draw_keypoints
 import math
 
-Model = namedtuple("Model", "model confidence_threshold iou_threshold input_size")
+Model = namedtuple("Model", "model confidence_threshold iou_threshold input_size is_yolo26")
 
 class PoseDetectorBase(YoloPredictorBase):
     @staticmethod
@@ -14,11 +14,11 @@ class PoseDetectorBase(YoloPredictorBase):
             return img_cpy
         height, width, _ = img_cpy.shape
         for obj in model_results:
-            x0 = obj["bbox"][0]
-            y0 = obj["bbox"][1]
-            x1 = obj["bbox"][2]
-            y1 = obj["bbox"][3]
-            
+            x0 = round(obj["bbox"][0])
+            y0 = round(obj["bbox"][1])
+            x1 = round(obj["bbox"][2])
+            y1 = round(obj["bbox"][3])
+
             id = int(obj["id"])
             #confi = float(obj["confidence"])
             color = PALLETE[id%PALLETE.shape[0]]
