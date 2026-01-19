@@ -12,6 +12,12 @@ Supported AI tasks:
 - [ ] OBB
 
 Supported Models:
+- [x] YOLO26
+   - [x] YOLO26-n
+   - [x] YOLO26-s
+   - [x] YOLO26-m
+   - [x] YOLO26-l
+   - [x] YOLO26-x
 - [x] YOLOv13
    - [x] YOLOv13-n
    - [x] YOLOv13-s
@@ -23,12 +29,7 @@ Supported Models:
    - [x] YOLO11-m
    - [x] YOLO11-l
    - [x] YOLO11-x
-- [x] YOLOv8
-   - [x] YOLOv8-n
-   - [x] YOLOv8-s
-   - [x] YOLOv8-m
-   - [x] YOLOv8-l
-   - [x] YOLOv8-x
+
 
 Supported Trackers:
 - [x] DeepSort

@@ -12,7 +12,7 @@ class YOLOSeg(SegmentBase):
     def __init__(self):
         self._model = None
 
-    def init(self, model_path, class_txt_path, confidence_threshold=0.5, iou_threshold=0.5):
+    def init(self, model_path, class_txt_path, confidence_threshold=0.5, iou_threshold=0.5, is_yolo26=False):
         _class_names = get_classes(class_txt_path)
         _session = InferenceSession(model_path, providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
         self.input_names,self.output_names, input_size = self.get_onnx_model_details(_session)
@@ -22,7 +22,8 @@ class YOLOSeg(SegmentBase):
             confidence_threshold=confidence_threshold,
             iou_threshold=iou_threshold,
             input_size=input_size,
-            class_names=_class_names)
+            class_names=_class_names,
+            is_yolo26=is_yolo26)
 
         init_frame = np.random.randint(0, 256, (input_size[0], input_size[1], 3)).astype(np.uint8)
         self.inference(init_frame)
@@ -37,12 +38,20 @@ class YOLOSeg(SegmentBase):
         image_size = (image.shape[1],image.shape[0])
         scale, processed_image = self.preprocess(image, self._model.input_size)
         outputs = self._model.model.run(self.output_names, {self.input_names[0]: processed_image})
-        boxes, scores, class_ids, mask_pred = self.process_box_output(
-            box_output=outputs[0], 
-            scale=scale,
-            image_size=image_size,
-            confidence_threshold=confi_thres,
-            iou_threshold=iou_thres)
+
+        if self._model.is_yolo26:
+            boxes, scores, class_ids, mask_pred = self.process_box_output_yolo26(
+                box_output=outputs[0], 
+                scale=scale,
+                image_size=image_size,
+                confidence_threshold=confi_thres)
+        else:
+            boxes, scores, class_ids, mask_pred = self.process_box_output(
+                box_output=outputs[0], 
+                scale=scale,
+                image_size=image_size,
+                confidence_threshold=confi_thres,
+                iou_threshold=iou_thres)
         mask_maps = self.process_mask_output(mask_pred, boxes, outputs[1], image_size, scale)
         resutls = []
         for i in range(len(class_ids)):
@@ -106,3 +115,22 @@ class YOLOSeg(SegmentBase):
             crop_mask = (crop_mask > 0.5).astype(np.uint8)
             mask_maps[i, y1:y2, x1:x2] = crop_mask
         return mask_maps
+    
+    def process_box_output_yolo26(self, box_output, scale, image_size, confidence_threshold):
+        predictions = np.squeeze(box_output)
+        mask = predictions[:, 4] > confidence_threshold
+        detections = predictions[mask]
+        if len(detections) == 0:
+            return [], [], [], np.array([])
+        
+        boxes = detections[:, :4]
+        scores = detections[:, 4]
+        class_ids = detections[:, 5].astype(np.int32)
+        mask_predictions = detections[:, 6:]
+        boxes *= scale
+        boxes[:, 0] = np.clip(boxes[:, 0], 0, image_size[0])
+        boxes[:, 1] = np.clip(boxes[:, 1], 0, image_size[1])
+        boxes[:, 2] = np.clip(boxes[:, 2], 0, image_size[0])
+        boxes[:, 3] = np.clip(boxes[:, 3], 0, image_size[1])
+        return boxes, scores, class_ids, mask_predictions
+

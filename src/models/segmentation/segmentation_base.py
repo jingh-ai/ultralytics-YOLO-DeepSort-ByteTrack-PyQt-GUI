@@ -6,7 +6,7 @@ import math
 import numpy as np
 
 
-Model = namedtuple("Model", "model confidence_threshold iou_threshold input_size class_names")
+Model = namedtuple("Model", "model confidence_threshold iou_threshold input_size class_names is_yolo26")
 
 
 class SegmentBase(YoloPredictorBase):
