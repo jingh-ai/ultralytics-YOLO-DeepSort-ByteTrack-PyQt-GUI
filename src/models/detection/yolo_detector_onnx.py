@@ -11,7 +11,7 @@ class YoloDetector(DetectorBase):
     def __init__(self):
         self._model = None
     
-    def init(self, model_path, class_txt_path, confidence_threshold=0.3, iou_threshold=0.45):
+    def init(self, model_path, class_txt_path, confidence_threshold=0.3, iou_threshold=0.45, is_yolo26=False):
         _class_names = get_classes(class_txt_path)
         _session = InferenceSession(model_path, providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
         self.input_names, self.output_names, input_size = self.get_onnx_model_details(_session)
@@ -20,7 +20,9 @@ class YoloDetector(DetectorBase):
             confidence_threshold=confidence_threshold,
             iou_threshold=iou_threshold,
             input_size=input_size,
-            class_names=_class_names)
+            class_names=_class_names,
+            is_yolo26=is_yolo26
+            )
         init_frame = np.random.randint(0, 256, (input_size[0], input_size[1], 3)).astype(np.uint8)
         self.inference(init_frame)
     
@@ -48,6 +50,30 @@ class YoloDetector(DetectorBase):
             detection_results.append(obj_dict)
             i += 1
         return detection_results
+    
+    def postprocess_yolo26(self, model_output, scale, conf_threshold, class_names):
+        predictions = np.squeeze(model_output[0])
+        mask = predictions[:, 4] > conf_threshold
+        detections = predictions[mask]
+        if len(detections) == 0:
+            return []
+
+        boxes = detections[:, :4]
+        boxes *= scale
+        scores = detections[:, 4]
+        class_ids = detections[:, 5]
+        detection_results=[]
+        for i in range(len(class_ids)):
+            obj_dict = {
+                    "id": int(i),
+                    'class': class_names[int(class_ids[i])],
+                    'confidence': scores[i],
+                    'bbox': np.rint(boxes[i , :]),
+                    "keypoints": np.array([]),
+                    "segmentation": np.array([])}
+            detection_results.append(obj_dict)
+
+        return detection_results
 
     def inference(self, image, confi_thres=None, iou_thres=None):
         if self._model is None:
@@ -62,11 +88,20 @@ class YoloDetector(DetectorBase):
         ort_inputs = {self.input_names[0]: image}
         outputs = self._model.model.run(self.output_names, ort_inputs)
 
-        detection_results = self.postprocess(
-            model_output=outputs,
-            scale=scale,
-            conf_threshold=confi_thres,
-            iou_threshold=iou_thres,
-            class_names=self._model.class_names
-        )
+        if self._model.is_yolo26:
+            detection_results = self.postprocess_yolo26(
+                model_output=outputs,
+                scale=scale,
+                conf_threshold=confi_thres,
+                class_names=self._model.class_names
+            )
+        else:
+            detection_results = self.postprocess(
+                model_output=outputs,
+                scale=scale,
+                conf_threshold=confi_thres,
+                iou_threshold=iou_thres,
+                class_names=self._model.class_names
+            )
         return detection_results
+

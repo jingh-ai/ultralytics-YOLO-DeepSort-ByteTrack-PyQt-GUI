@@ -43,20 +43,23 @@ class AiWorkerThread(QThread):
                 model_path=os.path.join(ROOT, f"weights/detection/{self.model_name}.onnx"),
                 class_txt_path=os.path.join(ROOT, "weights/classes.txt"),
                 confidence_threshold=self.confi_thr,
-                iou_threshold=self.iou_thr)
+                iou_threshold=self.iou_thr,
+                is_yolo26=("yolo26" in self.model_name.lower()))
         elif self.ai_task == "pose_detection":
             self.pose_detector = PoseDetector()
             self.pose_detector.init(
                 model_path=os.path.join(ROOT, f"weights/pose/{self.model_name}-pose.onnx"),
                 confidence_threshold=self.confi_thr,
-                iou_threshold=self.iou_thr)
+                iou_threshold=self.iou_thr,
+                is_yolo26=("yolo26" in self.model_name.lower()))
         elif self.ai_task == "segmentation":
             self.seg_detector = YOLOSeg()
             self.seg_detector.init(
                 model_path=os.path.join(ROOT, f"weights/segmentation/{self.model_name}-seg.onnx"),
                 class_txt_path=os.path.join(ROOT, "weights/classes.txt"),
                 confidence_threshold=self.confi_thr,
-                iou_threshold=self.iou_thr)
+                iou_threshold=self.iou_thr,
+                is_yolo26=("yolo26" in self.model_name.lower()))
 
     def _init_tracker(self):
         if self.tracker_name == "deepsort":
