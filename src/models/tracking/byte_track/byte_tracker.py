@@ -7,7 +7,7 @@ from src.models.tracking.byte_track.basetrack import BaseTrack, TrackState
 class STrack(BaseTrack):
     shared_kalman = KalmanFilterXYAH()
 
-    def __init__(self, tlwh, score, cls, kpt, seg):
+    def __init__(self, tlwh, score, cls, kpt, seg, obb):
         # wait activate
         self._tlwh = np.asarray(self.tlbr_to_tlwh(tlwh[:-1]), dtype=np.float32)
         self.kalman_filter = None
@@ -19,6 +19,7 @@ class STrack(BaseTrack):
         self.cls = cls
         self.kpt = kpt
         self.seg = seg
+        self.obb = obb
         self.idx = tlwh[-1]
 
     def predict(self):
@@ -86,6 +87,7 @@ class STrack(BaseTrack):
         self.idx = new_track.idx
         self.kpt = new_track.kpt
         self.seg = new_track.seg
+        self.obb = new_track.obb
 
     def update(self, new_track, frame_id):
         """
@@ -109,6 +111,7 @@ class STrack(BaseTrack):
         self.idx = new_track.idx
         self.kpt = new_track.kpt
         self.seg = new_track.seg
+        self.obb = new_track.obb
 
     def convert_coords(self, tlwh):
         return self.tlwh_to_xyah(tlwh)
@@ -191,18 +194,21 @@ class BYTETracker:
         scores = []
         kpts = []
         segs = []
+        obbs = []
         for out in detection_results:
             bboxes.append(out["bbox"])
             cls.append(out["class"])
             scores.append(out["confidence"])
             kpts.append(out["keypoints"])
             segs.append(out["segmentation"])
+            obbs.append(out["obb"])
         # add index
         bboxes = np.concatenate([bboxes, np.arange(len(bboxes)).reshape(-1, 1)], axis=-1)
         scores = np.array(scores)
         cls = np.array(cls)
         kpts = np.array(kpts)
         segs = np.array(segs)
+        obbs = np.array(obbs)
         #cls = class_names
 
         remain_inds = scores > self.track_high_thresh
@@ -220,6 +226,8 @@ class BYTETracker:
         kpts_second = kpts[inds_second]
         segs_keep = segs[remain_inds]
         segs_second = segs[inds_second]
+        obbs_keep = obbs[remain_inds]
+        obbs_second = obbs[inds_second]
 
         detections = self.init_track(dets, scores_keep, cls_keep, kpts_keep, segs_keep, ori_img)
         """ Add newly detected tracklets to tracked_stracks"""
@@ -318,14 +326,15 @@ class BYTETracker:
                 box_dict["confidence"] = float(track.score)
                 box_dict["keypoints"] = track.kpt
                 box_dict["segmentation"] = track.seg
+                box_dict["obb"] = track.obb
                 track_outputs.append(box_dict)
         return track_outputs
 
     def get_kalmanfilter(self):
         return KalmanFilterXYAH()
 
-    def init_track(self, dets, scores, cls, kpts, segs, img=None):
-        return [STrack(xyxy, s, c, k, sg) for (xyxy, s, c, k, sg) in zip(dets, scores, cls, kpts, segs)] if len(dets) else []  # detections
+    def init_track(self, dets, scores, cls, kpts, segs, obbs, img=None):
+        return [STrack(xyxy, s, c, k, sg, ob) for (xyxy, s, c, k, sg, ob) in zip(dets, scores, cls, kpts, segs, obbs)] if len(dets) else []  # detections
 
     def get_dists(self, tracks, detections):
         dists = matching.iou_distance(tracks, detections)

@@ -11,6 +11,7 @@ class Detection(object):
         self.feature = np.asarray(feature, dtype=np.float32)
         self.keypoint = kpt_
         self.segmentation = seg_
+        self.obb = obb_
 
     def to_tlbr(self):
         """Convert bounding box to format `(min x, min y, max x, max y)`, i.e.,
