@@ -2,6 +2,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from src.models.detection.yolo_detector_onnx import YoloDetector
 from src.models.pose.yolo_pose_onnx import PoseDetector
 from src.models.segmentation.yolo_seg_onnx import YOLOSeg
+from src.models.obb.yolo_obb_onnx import YoloOBBDetector
 from src.models.tracking.deep_sort.deep_sort import DeepSort
 from src.models.tracking.byte_track.byte_tracker import BYTETracker
 from src.data_type.video_buffer import LatestFrame
@@ -60,6 +61,14 @@ class AiWorkerThread(QThread):
                 confidence_threshold=self.confi_thr,
                 iou_threshold=self.iou_thr,
                 is_yolo26=("yolo26" in self.model_name.lower()))
+        elif self.ai_task == "obb_detection":
+            self.obb_detector = YoloOBBDetector()
+            self.obb_detector.init(
+                model_path=os.path.join(ROOT, f"weights/obb/{self.model_name}-obb.onnx"),
+                class_txt_path=os.path.join(ROOT, "weights/dota_classes.txt"),
+                confidence_threshold=self.confi_thr,
+                iou_threshold=self.iou_thr,
+                is_yolo26=("yolo26" in self.model_name.lower()))
 
     def _init_tracker(self):
         if self.tracker_name == "deepsort":
@@ -92,6 +101,8 @@ class AiWorkerThread(QThread):
                 model_output = self.pose_detector.inference(frame, self.confi_thr, self.iou_thr)
             elif self.ai_task == "segmentation":
                 model_output = self.seg_detector.inference(frame, self.confi_thr, self.iou_thr)
+            elif self.ai_task == "obb_detection":
+                model_output = self.obb_detector.inference(frame, self.confi_thr, self.iou_thr)
 
             model_output = self.tracker.update(
                 detection_results=model_output,

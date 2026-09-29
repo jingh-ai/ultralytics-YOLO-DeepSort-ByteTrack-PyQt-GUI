@@ -34,6 +34,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.radioButton_det.toggled.connect(lambda: self.get_ai_task(self.radioButton_det))
         self.radioButton_pose.toggled.connect(lambda: self.get_ai_task(self.radioButton_pose))
         self.radioButton_seg.toggled.connect(lambda: self.get_ai_task(self.radioButton_seg))
+        self.radioButton_obb.toggled.connect(lambda: self.get_ai_task(self.radioButton_obb))
         self.doubleSpinBox_conf.valueChanged.connect(lambda x: self.update_parameter(x, 'doubleSpinBox_conf'))
         self.doubleSpinBox_interval.valueChanged.connect(lambda x: self.update_parameter(x, 'doubleSpinBox_interval'))
         self.doubleSpinBox_iou.valueChanged.connect(lambda x: self.update_parameter(x, 'doubleSpinBox_iou'))
@@ -94,6 +95,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         elif btn.text() == 'Segmentation':
             if btn.isChecked() == True:
                 self.ai_task = "segmentation"
+        elif btn.text() == 'OBB':
+            if btn.isChecked() == True:
+                self.ai_task = "obb_detection"
     
     def model_task_mapping(self):
         if "YOLOv13" in self.comboBox_model.currentText():
@@ -101,10 +105,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.radioButton_det.setChecked(True)
             self.radioButton_pose.setDisabled(True)
             self.radioButton_seg.setDisabled(True)
+            self.radioButton_obb.setDisabled(True)
         else:
             self.radioButton_det.setDisabled(False)
             self.radioButton_pose.setDisabled(False)
             self.radioButton_seg.setDisabled(False)
+            self.radioButton_obb.setDisabled(False)
     
     def choose_model(self):
         self.model_name = self.comboBox_model.currentText()
@@ -119,6 +125,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.radioButton_det.setDisabled(False)
             self.radioButton_pose.setDisabled(False)
             self.radioButton_seg.setDisabled(False)
+            self.radioButton_obb.setDisabled(False)
             self.comboBox_model.setDisabled(False)
             self.comboBox_tracker.setDisabled(False)
             self.pushButton_cam.setDisabled(False)
@@ -139,6 +146,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.radioButton_det.setDisabled(True)
             self.radioButton_pose.setDisabled(True)
             self.radioButton_seg.setDisabled(True)
+            self.radioButton_obb.setDisabled(True)
             self.comboBox_model.setDisabled(True)
             self.comboBox_tracker.setDisabled(True)
             self.pushButton_cam.setDisabled(True)
@@ -157,6 +165,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.radioButton_det.setDisabled(True)
             self.radioButton_pose.setDisabled(True)
             self.radioButton_seg.setDisabled(True)
+            self.radioButton_obb.setDisabled(True)
             self.comboBox_model.setDisabled(True)
             self.comboBox_tracker.setDisabled(True)
             self.pushButton_cam.setDisabled(True)

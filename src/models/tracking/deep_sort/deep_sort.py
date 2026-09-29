@@ -45,7 +45,8 @@ class DeepSort(object):
                     "confidence":track.confi_,
                     "class":track.cls_,
                     "keypoints":track.kpt_,
-                    "segmentation":track.seg_
+                    "segmentation":track.seg_,
+                    "obb":track.obb_
                 }
             outputs.append(obj_dict)
         return outputs

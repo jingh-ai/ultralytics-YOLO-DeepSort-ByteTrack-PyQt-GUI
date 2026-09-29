@@ -66,3 +66,9 @@ if __name__ == "__main__":
     if not os.path.exists(SEG_DIR):
         os.makedirs(SEG_DIR)
     download_dropbox_folder(SEG_URL, SEG_DIR)
+
+    OBB_URL = "https://www.dropbox.com/scl/fo/18n23l1zngnh3jp5kpcjk/AI65_A6GP62beZvTqhT8rSc?rlkey=faqirlu9q44ppi9y061zolmm7&st=bgju7a3t&dl=0"
+    OBB_DIR = "weights/obb"
+    if not os.path.exists(OBB_DIR):
+            os.makedirs(OBB_DIR)
+    download_dropbox_folder(OBB_URL, OBB_DIR)

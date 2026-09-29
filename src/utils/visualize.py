@@ -34,11 +34,55 @@ def draw_keypoints(image, keypoints, color, kpt_score_threshold=0.3, radius=4, t
     return image
 
 
+def label_metrics(width, height):
+    """Size-adaptive (font_scale, thickness) for an image of these dimensions."""
+    FONT_SCALE = 1e-3
+    THICKNESS_SCALE = 6e-4
+    font_scale = min(width, height) * FONT_SCALE
+    if font_scale <= 0.4:
+        font_scale = 0.41
+    elif font_scale > 2:
+        font_scale = 2.0
+    thickness = math.ceil(min(width, height) * THICKNESS_SCALE)
+    return font_scale, thickness
+
+
+def draw_label(image, text, anchor, color, font_scale, thickness):
+    """Draw the filled chip and the dark-then-light text, in place, at anchor."""
+    x0, y0 = int(anchor[0]), int(anchor[1])
+    txt_color_light = (255, 255, 255)
+    txt_color_dark = (0, 0, 0)
+    font = cv.FONT_HERSHEY_SIMPLEX
+    txt_size = cv.getTextSize(text, font, 0.4, 1)[0]
+    cv.rectangle(
+        image,
+        (x0, y0 + 1),
+        (x0 + txt_size[0] + 1, y0 + int(1.5 * txt_size[1])),
+        color,
+        -1)
+    cv.putText(image, text, (x0, y0 + txt_size[1]), font, font_scale, txt_color_dark, thickness=thickness + 1)
+    cv.putText(image, text, (x0, y0 + txt_size[1]), font, font_scale, txt_color_light, thickness=thickness)
+
+
+def draw_obb(image, obb, color, thickness=2):
+    """Draw a rotated box [cx, cy, w, h, angle_rad] in place.
+
+    Returns the (x, y) of the topmost corner so callers can anchor a label there.
+    """
+    cx, cy, w, h, r = (float(v) for v in np.asarray(obb).reshape(-1)[:5])
+    points = cv.boxPoints(((cx, cy), (w, h), math.degrees(r)))
+    points = np.intp(np.round(points))
+    cv.polylines(image, [points], isClosed=True, color=color, thickness=max(1, int(thickness)))
+    top = points[points[:, 1].argmin()]
+    return int(top[0]), int(top[1])
+
+
 def draw_results(image, model_results):
         img_cpy = image.copy()
         if model_results == []:
             return img_cpy
         height, width, _ = img_cpy.shape
+        font_scale, thickness = label_metrics(width, height)
         if model_results[0]["segmentation"].size > 0:
             mask_alpha = 0.5
             for obj in model_results:
@@ -69,25 +113,9 @@ def draw_results(image, model_results):
                 img_cpy = draw_keypoints(img_cpy, obj["keypoints"], color)
 
             text = '%d-%s'%(id,class_name)
-            txt_color_light = (255, 255, 255)
-            txt_color_dark = (0, 0, 0)
-            font = cv.FONT_HERSHEY_SIMPLEX
-            FONT_SCALE = 1e-3 
-            THICKNESS_SCALE = 6e-4 
-            font_scale = min(width, height) * FONT_SCALE
-            if font_scale <= 0.4:
-                font_scale = 0.41 
-            elif font_scale > 2:
-                font_scale = 2.0
-            thickness = math.ceil(min(width, height) * THICKNESS_SCALE)
-            txt_size = cv.getTextSize(text, font, 0.4, 1)[0]
-            cv.rectangle(img_cpy, (x0, y0), (x1, y1), color, int(thickness*5*font_scale))
-            cv.rectangle(
-                img_cpy,
-                (x0, y0 + 1),
-                (x0 + txt_size[0] + 1, y0 + int(1.5*txt_size[1])),
-                color,
-                -1)
-            cv.putText(img_cpy, text, (x0, y0 + txt_size[1]), font, font_scale, txt_color_dark, thickness=thickness+1)
-            cv.putText(img_cpy, text, (x0, y0 + txt_size[1]), font, font_scale, txt_color_light, thickness=thickness) 
+            if obj["obb"].size > 0:
+                x0, y0 = draw_obb(img_cpy, obj["obb"], color, int(thickness*5*font_scale))
+            else:
+                cv.rectangle(img_cpy, (x0, y0), (x1, y1), color, int(thickness*5*font_scale))
+            draw_label(img_cpy, text, (x0, y0), color, font_scale, thickness)
         return img_cpy

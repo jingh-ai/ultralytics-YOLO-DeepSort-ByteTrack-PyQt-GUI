@@ -46,7 +46,8 @@ class YoloDetector(DetectorBase):
                     'confidence': det[4],
                     'bbox': np.rint(det[:4]),
                     "keypoints": np.array([]),
-                    "segmentation": np.array([])}
+                    "segmentation": np.array([]),
+                    "obb": np.array([])}
             detection_results.append(obj_dict)
             i += 1
         return detection_results
@@ -70,7 +71,8 @@ class YoloDetector(DetectorBase):
                     'confidence': scores[i],
                     'bbox': np.rint(boxes[i , :]),
                     "keypoints": np.array([]),
-                    "segmentation": np.array([])}
+                    "segmentation": np.array([]),
+                    "obb": np.array([])}
             detection_results.append(obj_dict)
 
         return detection_results
