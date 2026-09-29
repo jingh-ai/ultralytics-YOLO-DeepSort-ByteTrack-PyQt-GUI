@@ -40,7 +40,8 @@ class PoseDetector(PoseDetectorBase):
                     "confidence":pred[4],
                     "bbox":bbox,
                     "keypoints":np.array(kpt),
-                    "segmentation":np.array([])}
+                    "segmentation":np.array([]),
+                    "obb": np.array([])}
                 pose_results.append(pose_dict)
         return pose_results
     
@@ -66,7 +67,8 @@ class PoseDetector(PoseDetectorBase):
                     "confidence":float(scores[i]),
                     "bbox": np.rint(boxes[i]),
                     "keypoints":np.array(kpt),
-                    "segmentation":np.array([])}
+                    "segmentation":np.array([]),
+                    "obb": np.array([])}
                 pose_results.append(pose_dict)
         return pose_results
     

@@ -9,7 +9,7 @@ Supported AI tasks:
 - [x] Detection
 - [x] Pose Estimation
 - [x] Segmentation
-- [ ] OBB
+- [x] Oriented Bounding Boxes
 
 Supported Models:
 - [x] YOLO26

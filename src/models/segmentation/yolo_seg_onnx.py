@@ -61,7 +61,8 @@ class YOLOSeg(SegmentBase):
                 "bbox": np.rint(boxes[i]),
                 "confidence": scores[i],
                 "keypoints":np.array([]),
-                "segmentation": np.array(mask_maps[i])}
+                "segmentation": np.array(mask_maps[i]),
+                "obb": np.array([])}
             resutls.append(obj_dict)
         return resutls
     

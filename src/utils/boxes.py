@@ -18,6 +18,17 @@ def xyxy2xywh(bboxes):
     bboxes[:, 3] = bboxes[:, 3] - bboxes[:, 1]
     return bboxes
 
+def xywhr2xyxy(boxes):
+    """(N, 5) [cx, cy, w, h, angle_rad] -> (N, 4) enclosing upright rects in xyxy."""
+    boxes = np.asarray(boxes, dtype=np.float32).reshape(-1, 5)
+    if boxes.shape[0] == 0:
+        return np.zeros((0, 4), dtype=np.float32)
+    cx, cy, w, h, r = boxes[:, 0], boxes[:, 1], boxes[:, 2], boxes[:, 3], boxes[:, 4]
+    cos_r, sin_r = np.abs(np.cos(r)), np.abs(np.sin(r))
+    half_w = (w * cos_r + h * sin_r) / 2
+    half_h = (w * sin_r + h * cos_r) / 2
+    return np.stack([cx - half_w, cy - half_h, cx + half_w, cy + half_h], axis=1)
+
 
 def multiclass_nms_class_agnostic(boxes, scores, nms_thr, score_thr):
     """Multiclass NMS implemented in Numpy. Class-agnostic version."""
@@ -89,3 +100,38 @@ def multiclass_nms_class_agnostic_keypoints(boxes, scores, kpts, nms_thr, score_
         )
     return dets
 
+def multiclass_nms_class_agnostic_rotated(boxes, scores, angles, nms_thr, score_thr):
+    """Rotated NMS implemented with OpenCV. Class-agnostic version.
+
+    boxes:  (N, 4) [cx, cy, w, h]
+    scores: (N, nc) per-class score matrix (not a pre-reduced max vector)
+    angles: (N,) radians
+    returns (K, 7) rows [cx, cy, w, h, score, cls, angle_rad], or None.
+    """
+    cls_inds = scores.argmax(1)
+    cls_scores = scores[np.arange(len(cls_inds)), cls_inds]
+
+    valid_score_mask = cls_scores > score_thr
+    if valid_score_mask.sum() == 0:
+        return None
+    valid_scores = cls_scores[valid_score_mask]
+    valid_boxes = boxes[valid_score_mask]
+    valid_cls_inds = cls_inds[valid_score_mask]
+    valid_angles = angles[valid_score_mask]
+
+    # OpenCV RotatedRect wants degrees; one of two conversion sites (see also
+    # draw_obb in src/utils/visualize.py).
+    rects = [((float(b[0]), float(b[1])), (float(b[2]), float(b[3])), float(math.degrees(a)))
+             for b, a in zip(valid_boxes, valid_angles)]
+    keep = cv.dnn.NMSBoxesRotated(
+        rects, valid_scores.astype(np.float32).tolist(), float(score_thr), float(nms_thr))
+    if len(keep) == 0:
+        return None
+    # keep .flatten(): opencv <=4.7 returns Nx1 here, 4.11+ returns flat
+    keep = np.array(keep).flatten()
+
+    return np.concatenate(
+        [valid_boxes[keep],
+         valid_scores[keep, None],
+         valid_cls_inds[keep, None],
+         valid_angles[keep, None]], 1)

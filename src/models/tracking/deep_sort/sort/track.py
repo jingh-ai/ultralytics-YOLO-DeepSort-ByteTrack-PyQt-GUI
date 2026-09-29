@@ -63,13 +63,14 @@ class Track:
 
     """
 
-    def __init__(self, mean, cls_, confi_, kpt_, seg_, covariance, track_id, n_init, max_age,
+    def __init__(self, mean, cls_, confi_, kpt_, seg_, obb_, covariance, track_id, n_init, max_age,
                  feature=None):
         self.mean = mean
         self.cls_ = cls_
         self.confi_ = confi_
         self.kpt_ = kpt_
         self.seg_ = seg_
+        self.obb_ = obb_
         self.covariance = covariance
         self.track_id = track_id
         self.hits = 1
@@ -146,6 +147,7 @@ class Track:
         self.confi_ = detection.confidence
         self.kpt_ = detection.keypoint
         self.seg_ = detection.segmentation
+        self.obb_ = detection.obb
 
         self.hits += 1
         self.time_since_update = 0
