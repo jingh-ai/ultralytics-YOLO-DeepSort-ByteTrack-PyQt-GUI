@@ -29,7 +29,7 @@ class DeepSort(object):
         features = self._get_features(bbox_xywh, ori_img)
         bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)
         
-        detections = [Detection(bbox_tlwh[i], obj["class"], obj["confidence"], features[i], obj["keypoints"], obj["segmentation"]) for i, obj in enumerate(
+        detections = [Detection(bbox_tlwh[i], obj["class"], obj["confidence"], features[i], obj["keypoints"], obj["segmentation"], obj["obb"]) for i, obj in enumerate(
             detection_results)]
         self.tracker.predict()
         self.tracker.update(detections)

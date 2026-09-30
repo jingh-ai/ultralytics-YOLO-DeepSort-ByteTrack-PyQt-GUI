@@ -229,7 +229,7 @@ class BYTETracker:
         obbs_keep = obbs[remain_inds]
         obbs_second = obbs[inds_second]
 
-        detections = self.init_track(dets, scores_keep, cls_keep, kpts_keep, segs_keep, ori_img)
+        detections = self.init_track(dets, scores_keep, cls_keep, kpts_keep, segs_keep, obbs_keep, ori_img)
         """ Add newly detected tracklets to tracked_stracks"""
         unconfirmed = []
         tracked_stracks = []  # type: list[STrack]
@@ -261,7 +261,7 @@ class BYTETracker:
                 refind_stracks.append(track)
         """ Step 3: Second association, with low score detection boxes"""
         # association the untrack to the low score detections
-        detections_second = self.init_track(dets_second, scores_second, cls_second, kpts_second, segs_second, ori_img)
+        detections_second = self.init_track(dets_second, scores_second, cls_second, kpts_second, segs_second, obbs_second, ori_img)
         r_tracked_stracks = [strack_pool[i] for i in u_track if strack_pool[i].state == TrackState.Tracked]
         # TODO
         dists = matching.iou_distance(r_tracked_stracks, detections_second)
